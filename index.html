@@ -1,0 +1,700 @@
+<!doctype html>
+<html lang="en"> 
+ <head> 
+  <meta charset="UTF-8"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <title>Medical Terminology Quiz</title> 
+  <script src="https://cdn.tailwindcss.com"></script> 
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"> 
+  <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        /* Custom styles for the option buttons */
+        .option-button {
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            text-align: left;
+        }
+        .option-button:hover:not(.answered) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+        }
+        /* Icon styles */
+        .feedback-icon {
+            width: 24px;
+            height: 24px;
+            margin-left: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .feedback-icon-visible {
+            opacity: 1;
+        }
+    </style> 
+ </head> 
+ <body> 
+  <div id="quiz-container" class="w-full max-w-2xl bg-white shadow-xl rounded-2xl p-6 md:p-10"> <!-- Header: Score and Progress --> 
+   <div class="flex justify-between items-center mb-6 border-b pb-4 border-gray-200"> 
+    <h1 class="text-3xl font-bold text-gray-800">Med Terminology Quiz</h1> 
+    <div class="text-lg font-semibold text-gray-700">
+      Score: <span id="score-display" class="text-green-600">0</span> / <span id="total-questions">100</span> 
+    </div> 
+   </div> <!-- Question Display --> 
+   <div id="question-card" class="mb-8 min-h-24"> 
+    <p class="text-2xl font-semibold text-gray-800 mb-4" id="question-text"> Loading question... </p> 
+    <div id="options-container" class="space-y-4"> <!-- Options will be injected here --> 
+    </div> 
+   </div> <!-- Navigation and Progress --> 
+   <div class="flex justify-between items-center pt-4 border-t border-gray-200"> 
+    <div class="text-lg text-gray-600 font-medium">
+      Question <span id="current-q-number">0</span> of 90
+    </div> <button id="next-button" onclick="nextQuestion()" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition duration-150 ease-in-out disabled:bg-gray-400" disabled> Next Question </button> 
+   </div> <!-- Final Score Modal --> 
+   <div id="final-score-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50"> 
+    <div class="bg-white rounded-xl p-8 text-center shadow-2xl w-full max-w-sm"> 
+     <h2 class="text-4xl font-extrabold text-blue-600 mb-4">Quiz Complete!</h2> 
+     <p class="text-xl text-gray-700 mb-6">Your final score is:</p> 
+     <p class="text-6xl font-black text-green-700 mb-8" id="final-score-text">0 / 100</p> <button onclick="window.location.reload()" class="px-6 py-3 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transition duration-150"> Start Over </button> 
+    </div> 
+   </div> 
+  </div> 
+  <script>
+      
+        const quizData = [
+          
+            {
+            question: "The prefix Hemi means:",
+            options: ["Whole", "Half", "Double", "Short"],
+            answer: "Half",
+        },
+          
+          
+        
+        {
+            question: "Which word part is attached to the end of a word and typically carries the underlying meaning of the word?",
+            options: ["Prefix", "Word Root", "Suffix", "Combining Vowel"],
+            answer: "Suffix",
+        },
+        
+        
+      
+       
+        {
+            question: "The medical term for the absence of blood (lack of blood components) is:",
+            options: ["Cyanosis", "Tachycardia", "Anemia", "Leukopenia"],
+            answer: "Anemia",
+        },
+        
+        {
+            question: "What medical condition is characterized by a bluish color of the skin/mucous membranes?",
+            options: ["Anemia", "Bradycardia", "Cyanosis", "Hyperemia"],
+            answer: "Cyanosis",
+        },
+        
+          {
+            question: "The suffix -crit means:",
+            options: ["Easy", "Abnormal", "All","Separate"],
+            answer: "Separate",
+        },
+        
+         {
+            question: "The prefix Dys means:",
+            options: ["Easy", "Abnormal; difficult", "Half", "Normal"],
+            answer: "Abnormal; difficult",
+        },
+        
+        {
+            question: "The metabolic process for the breakdown of sugar (glucose) is termed:",
+            options: ["Lipolysis", "Proteolysis", "Glycolysis", "Necrosis"],
+            answer: "Glycolysis",
+        },
+      
+         {
+            question: "The suffix -phonia means:",
+            options: ["Fear", "Sound", "Mind", "Deficiency"],
+            answer: "Sound",
+        },
+        
+        {
+            question: "The prefix Noct- means:",
+            options: ["Not", "Tumor", "Uria", "Night"],
+            answer: "Night",
+        },
+        
+        
+       
+        {
+            question: "The word root meaning 'immature cells' is:",
+            options: ["Carcin(o)", "-blast", "Chondr(o)", "Cry(o)"],
+            answer: "-blast",
+        },
+        {
+            question: "The root Carcin(o) means:",
+            options: ["Cartilage","Blue" , "Cold","Cancer"],
+            answer: "Cancer",
+        },
+        {
+            question: "Chondr(o) is the word root for:",
+            options: ["Muscle", "Bone", "Cartilage", "Joint"],
+            answer: "Cartilage",
+        },
+        {
+            question: "The root Cry(o) relates to:",
+            options: ["Hidden", "Blue", "Cold", "Yellow", "Red"],
+            answer: "Cold",
+        },
+       
+        {
+            question: "The word root Cyan(o) indicates:",
+            options: ["Yellow", "White", "Blue", "Red"],
+            answer: "Blue",
+        },
+        {
+            question: "The suffix -phylaxis refers to:",
+            options: ["Sensation", "Protection", "Movement", "Discharge"],
+            answer: "Protection",
+        },
+        
+         {
+            question: "The combining form Athero means:",
+            options: ["Plaque; Fatty substance", "Tumor", "Air;Gas", "Night", "Dialting"],
+            answer: "Plaque; Fatty substance",
+        },
+        
+        {
+            question: "The root Lact(o) means:",
+            options: ["Sugar", "Fat", "Milk", "Water"],
+            answer: "Milk",
+        },
+        {
+            question: "Leuk(o) is the word root for:",
+            options: ["Red", "Blue", "White", "Yellow"],
+            answer: "White",
+        },
+        {
+            question: "The root Lith(o) signifies:",
+            options: ["Sleep", "Pain", "Stone", "Bone"],
+            answer: "Stone",
+        },
+        
+        {
+            question: "The root Necro is associated with:",
+            options: ["Life", "Death", "Sleep/Numbness", "Breath"],
+            answer: "Death",
+        },
+        {
+            question: "Tono relates to:",
+            options: ["Food", "Dry", "Tension; pressure", "Yellow"],
+            answer: "Tension; pressure",
+        },
+        {
+            question: "The root Tropho means:",
+            options: ["Growth", "Pressure", "Food; nutrition", "Body"],
+            answer: "Food; nutrition",
+        },
+        {
+            question: "Xanth(o) means:",
+            options: ["Dry", "Blue", "Yellow", "White"],
+            answer: "Yellow",
+        },
+        
+          {
+            question: "The condition of having stones (e.g., kidney or gallbladder) is:",
+            options: ["Nephritis", "Kinesia", "Lithiasis", "Osteomalacia"],
+            answer: "Lithiasis",
+        },
+        
+        {
+            question: "The suffix -opia means:",
+            options: ["Vision", "Sound", "Mind", "Digestion"],
+            answer: "Vision",
+        },
+        
+         {
+            question: "Crypt(o) means:",
+            options: ["Open", "Clear", "Hidden", "White"],
+            answer: "Hidden",
+        },
+        {
+            question: "The root Xer(o) indicates:",
+            options: ["Water", "Cold", "Dry", "Pressure"],
+            answer: "Dry",
+        },
+        
+        {
+            question: "Narco is a root meaning:",
+            options: ["Death", "Sleep/Numbness", "Hardening", "Crooked"],
+            answer: "Sleep/Numbness",
+        },
+        
+        {
+            question: "The prefix Py(o) means:",
+            options: ["Fever", "Pus", "Tumor", "Disease"],
+            answer: "Pus",
+        },
+        {
+            question: "The prefix Brachy means:",
+            options: ["Slow", "Against", "Short", "Half"],
+            answer: "Short",
+        },
+        
+        {
+            question: "The term for an abnormally fast heart rate is:",
+            options: ["Bradycardia", "Tachycardia", "Hypotension", "Hypertrophy"],
+            answer: "Tachycardia",
+        },
+        {
+            question: "The prefix Brady means:",
+            options: ["Fast", "Slow", "Difficult", "Above normal"],
+            answer: "Slow",
+        },
+        {
+            question: "The prefix Anti means:",
+            options: ["With", "Below normal", "Against", "Abnormal"],
+            answer: "Against",
+        },
+        
+        {
+            question: "The suffix -crine means:",
+            options: ["Secreting", "Blood", "Sensation", "Recording"],
+            answer: "Secreting",
+        },
+       
+      
+        {
+            question: "Hyper is a prefix meaning:",
+            options: ["Below normal", "Above normal", "Against", "Slow"],
+            answer: "Above normal",
+        },
+        
+        
+        {
+            question: "A word part attached to the beginning of a word that modifies the meaning is called a:",
+            options: ["Suffix", "Word Root", "Prefix", "Combining Form"],
+            answer: "Prefix",
+        },
+        
+        {
+            question: "The suffix -gram means:",
+            options: ["Recording instrument", "Process of recording", "A recording", "Condition"],
+            answer: "A recording",
+        },
+        
+        {
+            question: "The suffix -algia means:",
+            options: ["Breaking", "Immature cell", "Pain", "Secreting"],
+            answer: "Pain",
+        },
+        {
+            question: "The suffix -clast means:",
+            options: ["Pain", "Breaking", "Immature cell", "Secreting"],
+            answer: "Breaking",
+        },
+        
+        {
+            question: "The suffix -megaly means:",
+            options: ["Pain", "Softening", "Immature cell", "Enlargement"],
+            answer: "Enlargement",
+        },
+        {
+            question: "The suffix -cidal means:",
+            options: ["Secreting", "Killing", "Hardening", "Softening"],
+            answer: "Killing",
+        },
+        
+        {
+            question: "The suffix -emia means:",
+            options: ["Sensation", "Protein", "Blood", "Recording instrument"],
+            answer: "Blood",
+        },
+        
+        
+        {
+            question: "The suffix -esthesia means:",
+            options: ["Blood", "Protein", "Sensation", "Process of recording"],
+            answer: "Sensation",
+        },
+        
+        {
+            question: "The suffix -graph means:",
+            options: ["A recording", "Process of recording", "Recording instrument", "Inflammation"],
+            answer: "Recording instrument",
+        },
+        
+        {
+            question: "The suffix -ism means:",
+            options: ["Inflammation", "Movement", "Condition", "Specialist"],
+            answer: "Condition",
+        },
+        
+          {
+            question: "A word root combined with a vowel (usually 'o') is known as a:",
+            options: ["Prefix", "Suffix", "Combining Form", "Compound Word"],
+            answer: "Combining Form",
+        },
+        {
+            question: "The suffix -itis means:",
+            options: ["Condition", "Inflammation", "Destruction", "Softening"],
+            answer: "Inflammation",
+        },
+        {
+            question: "The suffix -kinesia means:",
+            options: ["Specialist", "Movement", "Destruction", "Softening"],
+            answer: "Movement",
+        },
+        {
+            question: "The suffix -logist means:",
+            options: ["Study of", "Specialist in the study of", "Destruction", "Softening"],
+            answer: "Specialist in the study of",
+        },
+        {
+            question: "The suffix -lysis means:",
+            options: ["Fixation", "Destruction; breakdown", "Softening", "Digestion"],
+            answer: "Destruction; breakdown",
+        },
+        {
+            question: "The suffix -malacia means:",
+            options: ["Hardening", "Fixation", "Softening", "Deficiency"],
+            answer: "Softening",
+        },
+        
+        {
+            question: "The suffix -graphy means:",
+            options: ["A recording", "Recording instrument", "Process of recording", "Movement"],
+            answer: "Process of recording",
+        },
+        
+        {
+            question: "The main part of a medical word that contains its basic meaning is the:",
+            options: ["Prefix", "Word root", "Suffix", "Combining Vowel"],
+            answer: "Word root",
+        },
+        {
+            question: "The suffix -penia means:",
+            options: ["Eating", "Deficiency", "Digestion", "Fear"],
+            answer: "Deficiency",
+        },
+        {
+            question: "The suffix -pepsia means:",
+            options: ["Deficiency", "Digestion", "Fixation", "Sound"],
+            answer: "Digestion",
+        },
+        {
+            question: "The suffix -pexy means:",
+            options: ["Deficiency", "Digestion", "Fixation", "Sound"],
+            answer: "Fixation",
+        },
+        {
+            question: "The suffix -phagia means:",
+            options: ["Fear", "Sound", "Eating; devouring", "Mind"],
+            answer: "Eating; devouring",
+        },
+        
+     
+        {
+            question: "The suffix -phrenia means:",
+            options: ["Fear", "Sound", "Digestion", "of the mind"],
+            answer: "of the mind",
+        },
+        {
+            question: "The word root 'gastr(o)' refers to the:",
+            options: ["Liver", "Intestine", "Stomach", "Kidney"],
+            answer: "Stomach",
+        },
+        
+        {
+            question: "The prefix Hypo means:",
+            options: ["Above normal", "Below normal", "Short", "Difficult"],
+            answer: "Below normal",
+        },
+          {
+            question: "A deficiency in the number of white blood cells is known as:",
+            options: ["Leukopenia", "Cyanosis", "Anemia", "Tachycardia"],
+            answer: "Leukopenia",
+        },
+        {
+            question: "The suffix -scopy means:",
+            options: ["Surgical repair", "Incision", "Visual examination", "Surgical removal"],
+            answer: "Visual examination",
+        },
+        {
+            question: "The prefix 'tachy-' means:",
+            options: ["Slow", "Fast", "Difficult", "Half"],
+            answer: "Fast",
+        },
+        {
+            question: "The word root 'nephr(o)' refers to the:",
+            options: ["Liver", "Kidney", "Lung", "Nerve"],
+            answer: "Kidney",
+        },
+        
+        {
+            question: "The suffix -phobia means:",
+            options: ["Fear", "Eating", "Sound", "Mind"],
+            answer: "Fear",
+        },
+        {
+            question: "The suffix -pathy means:",
+            options: ["Tumor", "Inflammation", "Disease", "Enlargement"],
+            answer: "Disease",
+        },
+        {
+            question: "The prefix 'inter-' means:",
+            options: ["Outside", "Around", "Across", "Between"],
+            answer: "Between",
+        },
+        {
+            question: "The word root 'hepat(o)' refers to the:",
+            options: ["Spleen", "Stomach", "Liver", "Heart"],
+            answer: "Liver",
+        },
+        {
+            question: "The suffix -ectomy means:",
+            options: ["Incision", "Surgical repair", "Surgical removal", "Suture"],
+            answer: "Surgical removal",
+        },
+        {
+            question: "The prefix 'peri-' means:",
+            options: ["Around", "Through", "Under", "Before"],
+            answer: "Around",
+        },
+        {
+            question: "The word root 'derm(a)' refers to the:",
+            options: ["Bone", "Muscle", "Blood", "Skin"],
+            answer: "Skin",
+        },
+        {
+            question: "The suffix -logy means:",
+            options: ["Specialist in the study of", "Record of", "Study of", "Process of recording"],
+            answer: "Study of",
+        },
+        {
+            question: "The prefix 'micro-' means:",
+            options: ["Large", "Small", "Many", "Few"],
+            answer: "Small",
+        },
+        {
+            question: "The word root 'cardi(o)' refers to the:",
+            options: ["Lung", "Brain", "Stomach", "Heart"],
+            answer: "Heart",
+        },
+        {
+            question: "The suffix -ostomy means:",
+            options: ["Surgical removal", "Creation of a new opening", "Surgical repair", "Suture"],
+            answer: "Creation of a new opening",
+        },
+        {
+            question: "The combining form Actin means:",
+            options: ["Light", "Dark", "Protein", "Fatty substance"],
+            answer: "Light",
+        },
+        {
+            question: "The word root 'oste(o)' refers to:",
+            options: ["Joint", "Tendon", "Muscle", "Bone"],
+            answer: "Bone",
+        },
+        {
+            question: "The suffix -plasty means:",
+            options: ["Surgical repair", "Incision", "Surgical removal", "Suture"],
+            answer: "Surgical repair",
+        },
+        {
+            question: "The prefix 'post-' means:",
+            options: ["Before", "After", "Below", "Above"],
+            answer: "After",
+        },
+       
+        {
+            question: "The suffix -tomy means:",
+            options: ["Surgical repair", "Incision", "Surgical removal", "Creation of a new opening"],
+            answer: "Incision",
+        },
+        {
+            question: "The prefix 'pre-' means:",
+            options: ["After", "Below", "Above", "Before"],
+            answer: "Before",
+        },
+     
+        {
+            question: "The suffix -stenosis means:",
+            options: ["Protection", "Sensation", "Dilating", "Narrowing"],
+            answer: "Narrowing",
+        },
+        {
+            question: "The prefix 'a-' or 'an-' means:",
+            options: ["With", "Against", "Without or absence of", "Two"],
+            answer: "Without or absence of",
+        },
+        {
+            question: "The word root 'arthr(o)' refers to the:",
+            options: ["Joint", "Bone", "Muscle", "Cartilage"],
+            answer: "Joint",
+        },
+        {
+            question: "The suffix -osis means:",
+            options: ["Inflammation", "Condition or increase", "Softening", "Surgical repair"],
+            answer: "Condition or increase",
+        },
+        {
+            question: "The prefix 'Mal' means:",
+            options: ["Outside", "Across", "Within", "Bad/Inadequate"],
+            
+            answer: "Bad/Inadequate",
+        },
+        {
+            question: "The word root 'my(o)' refers to:",
+            options: ["Bone", "Joint", "Muscle", "Tendon"],
+            answer: "Muscle",
+        },
+        {
+            question: "The suffix -rrhea means:",
+            options: ["Bursting forth", "Surgical repair", "Flow or discharge", "Hardening"],
+            answer: "Flow or discharge",
+        },
+        {
+            question: "The prefix 'ab-' means:",
+            options: ["Toward", "Away from", "Near", "Above"],
+            answer: "Away from",
+        },
+        
+         {
+            question: "The suffix '-ectasis' means:",
+            options: ["Toward", "Away from", "Norrowing", "Dialating/Expanding"],
+            answer: "Dialating/Expanding",
+        },
+    ];
+      
+       
+
+        // --- GLOBAL STATE ---
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+        const totalQuestions = quizData.length;
+
+        // --- DOM ELEMENTS ---
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const scoreDisplay = document.getElementById('score-display');
+        const currentQNumber = document.getElementById('current-q-number');
+        const nextButton = document.getElementById('next-button');
+        const finalScoreModal = document.getElementById('final-score-modal');
+        const finalScoreText = document.getElementById('final-score-text');
+
+        // --- UTILITY ICONS (Inline SVG for instant rendering) ---
+        const correctIconSVG = `
+            <svg class="feedback-icon text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>`;
+        const incorrectIconSVG = `
+            <svg class="feedback-icon text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>`;
+        
+        // --- QUIZ LOGIC FUNCTIONS ---
+
+        function loadQuestion() {
+            if (currentQuestionIndex >= totalQuestions) {
+                showFinalScore();
+                return;
+            }
+
+            const currentQ = quizData[currentQuestionIndex];
+            answered = false;
+            nextButton.disabled = true;
+            optionsContainer.innerHTML = '';
+
+            questionText.textContent = currentQ.question;
+            currentQNumber.textContent = currentQuestionIndex + 1;
+
+            currentQ.options.forEach((optionText, index) => {
+                const optionButton = document.createElement('button');
+                optionButton.className = 'option-button w-full p-4 bg-gray-100 rounded-xl font-medium text-gray-700 shadow-sm border border-gray-200';
+                optionButton.setAttribute('data-option', optionText);
+                optionButton.innerHTML = `
+                    <span class="flex-1">${optionText}</span>
+                    <span class="feedback-placeholder"></span>
+                `;
+                optionButton.onclick = () => selectOption(optionText, optionButton);
+                optionsContainer.appendChild(optionButton);
+            });
+        }
+
+        function selectOption(selectedOptionText, selectedButton) {
+            if (answered) {
+                return; // Prevent multiple clicks on the current question
+            }
+            answered = true;
+            nextButton.disabled = false;
+            
+            const currentQ = quizData[currentQuestionIndex];
+            const isCorrect = selectedOptionText === currentQ.answer;
+
+            if (isCorrect) {
+                score++;
+                scoreDisplay.textContent = score;
+            }
+
+            showFeedback(currentQ.answer, selectedButton);
+        }
+
+        function showFeedback(correctAnswer, selectedButton) {
+            const buttons = optionsContainer.querySelectorAll('.option-button');
+            
+            buttons.forEach(button => {
+                const optionText = button.getAttribute('data-option');
+                const isCorrect = optionText === correctAnswer;
+                const isSelected = button === selectedButton;
+
+                // 1. Mark the button as answered (disables hover/interaction)
+                button.classList.add('answered');
+                button.disabled = true;
+
+                // 2. Add visual feedback (Telegram Quiz Style)
+                const iconPlaceholder = button.querySelector('.feedback-placeholder');
+                
+                if (isCorrect) {
+                    // Always mark the correct answer green
+                    button.classList.add('bg-green-100', 'border-green-400');
+                    iconPlaceholder.innerHTML = correctIconSVG;
+                    iconPlaceholder.querySelector('.feedback-icon').classList.add('feedback-icon-visible');
+                    button.classList.remove('bg-gray-100');
+                } else if (isSelected) {
+                    // Mark the user's incorrect choice red
+                    button.classList.add('bg-red-100', 'border-red-400');
+                    iconPlaceholder.innerHTML = incorrectIconSVG;
+                    iconPlaceholder.querySelector('.feedback-icon').classList.add('feedback-icon-visible');
+                    button.classList.remove('bg-gray-100');
+                }
+            });
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function showFinalScore() {
+            finalScoreText.textContent = `${score} / ${totalQuestions}`;
+            finalScoreModal.classList.remove('hidden');
+        }
+
+        // --- INITIALIZATION ---
+        window.onload = function() {
+            document.getElementById('total-questions').textContent = totalQuestions;
+            loadQuestion();
+        };
+
+    </script> 
+ 
+</body></html>
